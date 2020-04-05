@@ -48,6 +48,15 @@ public class User {
 	public void setUpdate_at(Date update_at) {
 		this.update_at = update_at;
 	}
+	@Override
+	public String toString() {
+		return "User [uid=" + uid + ", username=" + username + ", password=" + password + ", user_type=" + user_type
+				+ ", create_at=" + create_at + ", update_at=" + update_at + ", getUid()=" + getUid()
+				+ ", getUsername()=" + getUsername() + ", getPassword()=" + getPassword() + ", getUser_type()="
+				+ getUser_type() + ", getCreate_at()=" + getCreate_at() + ", getUpdate_at()=" + getUpdate_at()
+				+ ", getClass()=" + getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString()
+				+ "]";
+	}
 	
 	
 }

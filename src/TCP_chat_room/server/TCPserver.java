@@ -11,11 +11,13 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.server.Skeleton;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import TCP_chat_room.controller.MessageController;
 import TCP_chat_room.controller.UserController;
 import TCP_chat_room.model.Const;
 import TCP_chat_room.model.protocol.Request;
@@ -65,7 +67,7 @@ class ExecuteThread implements Runnable {
 		this.socket = s;
 		this.clientInfo = socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort();
 		this.clientIp = socket.getInetAddress().getHostAddress();
-		this.clientPort = socket.getLocalPort();
+		this.clientPort = socket.getPort();
 
 	}
 
@@ -77,37 +79,63 @@ class ExecuteThread implements Runnable {
 
 	// 业务逻辑
 	private void execute() throws IOException, InterruptedException {
-		// 解析请求
-		Request request = Request.parseRequestJson(readData());
-		// ip和端口号在客户端打包封装请求的时候获取不到 需要服务器端建立tcp连接后才能确定
-		request.setSrcIp(clientIp);
-		request.setSrcPort(clientPort);
-		if (request != null) {
-			// 根据request的具体类型 向controller分发任务
-			switch (request.getRequestType()) {
-			case Const.RequestTypeEnum.LOGIN: {
-				Response login = UserController.login(request);
-				// 将response写回给客户端
-				writeBack(login);
+		//自旋监听请求
+		while(!socket.isClosed()) {
+			// 解析请求
+			String readData = readData();
+			if("soket is closed".equals(readData)) {
+				//说明readData时已经发现socket断开了
 				break;
 			}
-			case Const.RequestTypeEnum.LOGOUT: {
-
-			}
-			case Const.RequestTypeEnum.SENDMSG: {
-
-			}
-			case Const.RequestTypeEnum.REGISTER: {
-				Response login = UserController.register(request);
-				// 将response写回给客户端
-				writeBack(login);
-				break;
-			}
-			default: {
-				break;
-			}
-			}
-		}
+			Request request = Request.parseRequestJson(readData);
+			// ip和端口号在客户端打包封装请求的时候获取不到 需要服务器端建立tcp连接后才能确定
+			request.setSrcIp(clientIp);
+			request.setSrcPort_tcp(clientPort);
+			if (request != null) {
+				// 根据request的具体类型 向controller分发任务
+				switch (request.getRequestType()) {
+				case Const.RequestTypeEnum.LOGIN: {
+					Response login = UserController.login(request);
+					// 将response写回给客户端
+					writeBack(login);
+					break;
+				}
+				case Const.RequestTypeEnum.LOGOUT: {
+					Response logout = UserController.logout(request);
+					// 将response写回给客户端
+					writeBack(logout);
+					break;
+				}
+				case Const.RequestTypeEnum.SENDMSG: {
+					Response sendMSG = MessageController.sendMSG(request);
+					// 将response写回给客户端
+					writeBack(sendMSG);
+					break;
+				}
+				case Const.RequestTypeEnum.REGISTER: {
+					Response register = UserController.register(request);
+					// 将response写回给客户端
+					writeBack(register);
+					break;
+				}
+				case Const.RequestTypeEnum.ONLINE_NUMBER: {
+					int onlineUserNum = ServerManager.getSM().getOnlineUserNum();
+					// 将response写回给客户端
+					writeBack(Response.createBySuccess("查询在线人数成功", onlineUserNum));
+					break;
+				}
+				default: {
+					break;
+				}
+				}
+			}	
+		}	
+		
+		//socket已经关闭 用户关闭了客户端  还没有登陆的用户也会有socket连接 这样无法区分是否为已登录用户
+		//而且socket断掉之后这里之前的循环一直阻塞 没办法正确跳出来  这个以后再想办 
+		//就采用退出接口的方法吧 （强制关闭还得得靠服务器端的socket连接状态监测）
+//		ServerManager.getSM().userLogout(clientInfo);
+		
 	}
 
 	private String readData() throws IOException, InterruptedException {
@@ -115,10 +143,14 @@ class ExecuteThread implements Runnable {
 		InputStream inputStream = socket.getInputStream();
 		int count = 0;
 		while (count == 0) {
+			Thread.sleep(200);
+			//检查socket是否断开
+			if(socket.isClosed()) {
+				return "soket is closed";
+			}
 			count = inputStream.available();
 		}
 		if (count != 0) {
-			System.out.println(count);
 			byte[] bt = new byte[count];
 			int readCount = 0;
 			while (readCount < count) {

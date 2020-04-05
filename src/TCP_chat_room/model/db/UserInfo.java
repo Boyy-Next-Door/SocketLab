@@ -31,11 +31,12 @@ public class UserInfo {
 	public void setUid(long uid) {
 		this.uid = uid;
 	}
-	public String getNick_name() {
+
+	public String getNickname() {
 		return nickname;
 	}
-	public void setNick_name(String nick_name) {
-		this.nickname = nick_name;
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
 	}
 	public String getPortrait_url() {
 		return portrait_url;
@@ -84,6 +85,17 @@ public class UserInfo {
 	}
 	public void setUpdate_at(Date update_at) {
 		this.update_at = update_at;
+	}
+	@Override
+	public String toString() {
+		return "UserInfo [id=" + id + ", uid=" + uid + ", nickname=" + nickname + ", portrait_url=" + portrait_url
+				+ ", sex=" + sex + ", age=" + age + ", school=" + school + ", major=" + major + ", class_str="
+				+ class_str + ", create_at=" + create_at + ", update_at=" + update_at + ", getId()=" + getId()
+				+ ", getUid()=" + getUid() + ", getNickname()=" + getNickname() + ", getPortrait_url()="
+				+ getPortrait_url() + ", getSex()=" + getSex() + ", getAge()=" + getAge() + ", getSchool()="
+				+ getSchool() + ", getMajor()=" + getMajor() + ", getClass_str()=" + getClass_str()
+				+ ", getCreate_at()=" + getCreate_at() + ", getUpdate_at()=" + getUpdate_at() + ", getClass()="
+				+ getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString() + "]";
 	}
 
 	

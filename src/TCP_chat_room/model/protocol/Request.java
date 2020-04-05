@@ -12,11 +12,19 @@ import com.alibaba.fastjson.JSON;
 public class Request {
 	private int requestType;		// 401-登陆 402-注册  403-发送消息 404-退出
 	private String srcIp;			//请求方Ip
-	private int srcPort;			//请求方端口号
+	private int srcPort_tcp;			//请求方端口号
 	private String destIp;			//接受方ip
-	private int destPort;			//接受方端口号
+	private int destPort_tcp;			//接受方端口号
 	private String body;			//请求体
+	private String cookie;			//cookie
 	private Date requestAt;			//请求创建时间
+	public String getCookie() {
+		return cookie;
+	}
+
+	public void setCookie(String cookie) {
+		this.cookie = cookie;
+	}
 	
 	//用于request和response的json化
 	public static String toJson(Object obj) {
@@ -44,12 +52,12 @@ public class Request {
 		this.srcIp = srcIp;
 	}
 
-	public int getSrcPort() {
-		return srcPort;
+	public int getSrcPort_tcp() {
+		return srcPort_tcp;
 	}
 
-	public void setSrcPort(int srcPort) {
-		this.srcPort = srcPort;
+	public void setSrcPort_tcp(int srcPort) {
+		this.srcPort_tcp = srcPort;
 	}
 
 	public String getDestIp() {
@@ -60,12 +68,12 @@ public class Request {
 		this.destIp = destIp;
 	}
 
-	public int getDestPort() {
-		return destPort;
+	public int getDestPort_tcp() {
+		return destPort_tcp;
 	}
 
-	public void setDestPort(int destPort) {
-		this.destPort = destPort;
+	public void setDestPort_tcp(int destPort) {
+		this.destPort_tcp = destPort;
 	}
 
 	public String getBody() {

@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import TCP_chat_room.model.Const;
 import TCP_chat_room.model.db.User;
+import TCP_chat_room.model.db.UserInfo;
 import TCP_chat_room.model.protocol.Cookie;
 import TCP_chat_room.utils.C3P0Utils;
 
@@ -39,19 +40,37 @@ public class UserDao {
 		return ((Long) runner.query(sql, new ScalarHandler(), username)) > 0 ? true : false;
 	}
 
-	public void insertCookie(Cookie ck) throws SQLException {
+	public boolean insertCookie(Cookie ck) throws SQLException {
 		QueryRunner runner = new QueryRunner(C3P0Utils.getDataSource());
 		String sql = "INSERT INTO tb_user_cookie ( uid, cookie, create_at ) VALUES ( ?, ?, ? ) "
 				+ "ON DUPLICATE KEY UPDATE cookie = ?,create_at = ?;";
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 		String create_at = simpleDateFormat.format(ck.getCreate_at());
-		runner.update(sql, ck.getUid(), ck.getCookie(), create_at, ck.getCookie(), create_at);
+		return (runner.update(sql, ck.getUid(), ck.getCookie(), create_at, ck.getCookie(), create_at))>0 ? true : false;
 	}
 
 	public boolean insertUser(User user) throws SQLException {
 		QueryRunner runner = new QueryRunner(C3P0Utils.getDataSource());
 		String sql = "INSERT INTO tb_user ( username,password,user_type) VALUES ( ?, ?, ?)";
 		return ( runner.update(sql,user.getUsername(),user.getPassword(),Const.UserTypeEnum.NORMAL_USER)) > 0 ? true : false;
+	}
+
+	public UserInfo selectUserInfoByUid(long uid) throws SQLException {
+		QueryRunner runner = new QueryRunner(C3P0Utils.getDataSource());
+		String sql = "SELECT * FROM tb_user_info WHERE uid=?";
+		return runner.query(sql, new BeanHandler<UserInfo>(UserInfo.class),uid);
+	}
+
+	public UserInfo selectUserInfoByUsername(String username) throws SQLException {
+		QueryRunner runner = new QueryRunner(C3P0Utils.getDataSource());
+		String sql = "SELECT * FROM tb_user_info WHERE  uid in (SELECT uid FROM tb_user WHERE username=?)";
+		return runner.query(sql, new BeanHandler<UserInfo>(UserInfo.class),username);
+	}
+
+	public User selectUserByUsername(String username) throws SQLException {
+		QueryRunner runner = new QueryRunner(C3P0Utils.getDataSource());
+		String sql = "SELECT * FROM tb_user WHERE username=?";
+		return runner.query(sql, new BeanHandler<User>(User.class),username);
 	}
 
 }

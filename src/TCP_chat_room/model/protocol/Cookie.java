@@ -8,6 +8,11 @@ public class Cookie {
 	private String cookie;		//采用MD5(MD5(currentTimeMillis) + uid）的方式生成唯一cookie 
 	private boolean expired;	//过期标志
 	private Date create_at;		//创建时间
+	public  Cookie(){}	
+	public Cookie(long uid, String cookie) {
+		this.uid=uid;
+		this.cookie=cookie;
+	}
 	public long getUid() {
 		return uid;
 	}
